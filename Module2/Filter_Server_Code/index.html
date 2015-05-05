@@ -1,0 +1,52 @@
+<html>
+<head>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+    var patients_map = {"mohit" : 8, "yash" : 9};
+        $(function(){
+            var iosocket = io.connect('http://10.1.36.163:8090/');
+ 
+            iosocket.on('connect', function () {
+                $('#incomingChatMessages').append($('<li>You are connected to Filter Server.</li>'));
+ 
+                iosocket.on('message', function(message) {
+                    $('#incomingChatMessages').append($('<li></li>').text(message));
+                });
+                
+                iosocket.on('road_data', function(message) {
+                    $('#inf').append($('<li></li>').text('Recieving data from Filter Server...'));
+                    $('#inf').append($('<h4></h4>').text('Updating best road to '+String(message)));
+                    if(message == '6' || message =='7')
+                        $('#end').text('Destination reached.');
+                        
+                });
+                
+                iosocket.on('disconnect', function() {
+                    $('#incomingChatMessages').append('<li>Disconnected</li>');
+                });
+            });
+ 
+            $('#outgoingChatMessage').keypress(function(event) {
+                if(event.which == 13) {
+                    event.preventDefault();
+                    iosocket.send('Patient,'+String(patients_map[$('#outgoingChatMessage').val()]));
+                    $('#current_data').text("Patient "+ $('#outgoingChatMessage').val() + " is current on road 1");
+                    $('#inf').append($('<li></li>').text('Sending query to Filter Server...'));
+                    //$('#outgoingChatMessage').val('');
+                }
+            });
+        });
+    </script>
+</head>
+<body>
+<h2> Internals of Application Servers Project</h2>
+<ul id="incomingChatMessages"></ul>
+
+
+<h4> Enter Patient name : </h4> <input type="text" id="outgoingChatMessage">
+<h4><p id="current_data"></p></h4>
+<p id="inf"></p>
+<h3 style="color:green"><p id="end"></p></h3>
+</body>
+</html>
